@@ -53,8 +53,27 @@ class Product:
     condition: Condition = Condition.INCONNU
     ean: EanInfo | None = None
 
+    # Champs propres à l'export Top 150 (hiérarchie catégorielle + poids économique).
+    metier: str = ""
+    niveau3: str = ""
+    niveau4: str = ""
+    va_ht: float | None = None
+    va_ttc: float | None = None
+    quantite: float | None = None
+
     segment: Segment | None = None
     segment_reasons: list[str] = field(default_factory=list)
+
+    @property
+    def prix_moyen_vente_periode_ttc(self) -> float | None:
+        """VA TTC / quantité = prix MOYEN de vente sur la période (juin-août).
+
+        ⚠️ Ce n'est PAS le prix Cultura actuel : ni prix du jour, ni prix 1P,
+        ni meilleur prix Marketplace. Indicateur historique uniquement.
+        """
+        if self.va_ttc is not None and self.quantite:
+            return round(self.va_ttc / self.quantite, 2)
+        return None
 
 
 # Colonnes cibles du rapport opérationnel (docs/BENCH_METHOD.md).

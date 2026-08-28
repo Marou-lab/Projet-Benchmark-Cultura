@@ -32,6 +32,12 @@ COLUMN_ALIASES: dict[str, str] = {
     "vendeur": "seller_internal", "vendeur cultura": "seller_internal",
     "marchand": "seller_internal", "shop": "seller_internal",
     "etat": "condition", "condition": "condition", "state": "condition",
+    # Champs propres à l'export Top 150 Cultura.
+    "metier": "metier",
+    "niveau 3": "niveau3", "niveau3": "niveau3",
+    "niveau 4": "niveau4", "niveau4": "niveau4",
+    "va ht": "va_ht", "va ttc": "va_ttc",
+    "qte": "quantite", "quantite": "quantite", "quantity": "quantite",
 }
 
 
@@ -130,15 +136,23 @@ def load_products(path: str | Path) -> LoadResult:
             if field not in values or values[field] in (None, ""):
                 values[field] = row.get(h)
 
+        niveau3 = str(values.get("niveau3") or "").strip()
         product = Product(
             row_index=i,
             name=str(values.get("name") or "").strip(),
             brand=str(values.get("brand") or "").strip(),
-            category=str(values.get("category") or "").strip(),
+            # Si pas de colonne "catégorie" explicite, on retombe sur Niveau 3.
+            category=str(values.get("category") or niveau3).strip(),
             price_internal=parse_price(values.get("price_internal")),
             seller_internal=str(values.get("seller_internal") or "").strip(),
             condition=_parse_condition(values.get("condition")),
             ean=validate_ean(str(values.get("ean") or "")),
+            metier=str(values.get("metier") or "").strip(),
+            niveau3=niveau3,
+            niveau4=str(values.get("niveau4") or "").strip(),
+            va_ht=parse_price(values.get("va_ht")),
+            va_ttc=parse_price(values.get("va_ttc")),
+            quantite=parse_price(values.get("quantite")),
         )
         products.append(product)
 
