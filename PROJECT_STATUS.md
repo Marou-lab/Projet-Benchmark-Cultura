@@ -16,8 +16,10 @@ récupère les prix, et génère un **Excel de benchmark** qui répond à la que
 
 ## Avancement global
 
-**~30 %.** Fondations + lecture/diagnostic du **vrai fichier Top 150** opérationnels et testés.
-Prochain grand pas (le risque n°1) : **récupérer des offres concurrentes fiables** → mini-POC Cdiscount.
+**~40 %.** Fondations + lecture/diagnostic du **vrai fichier Top 150** opérationnels. **Mini-POC
+Cdiscount réussi** (navigateur local, sans blocage) : Bench sait déjà trouver un candidat, **rejeter
+les faux positifs** et **refuser un match non prouvé**. Reste : les **prix Cultura actuels** (pour
+calculer les écarts) et l'industrialisation de la collecte.
 
 ## Ce qui fonctionne
 
@@ -31,19 +33,23 @@ Prochain grand pas (le risque n°1) : **récupérer des offres concurrentes fiab
 | Générer un Excel de diagnostic | ✅ | Produit un Excel de synthèse. | Généré |
 | Lire le **vrai** fichier Top 150 | ✅ | Reconnaît EAN/Produit/Marque/Vendeur + VA TTC/Métier/Niveau 3/4. | Diagnostic réel généré |
 | Copie **normalisée** (EAN figés) | ✅ | EAN figés en valeurs → plus de dépendance au fichier externe ; original intact. | 151 lignes, hors Git |
+| Lire une page Cdiscount (navigateur local) | ✅ | Ouvre la recherche + la fiche, lit prix/vendeur/livraison/1P-3P. | POC 5 produits, 0 blocage |
+| Rejeter les faux positifs / refuser un faux match | ✅ | Ne prend pas le 1ᵉʳ résultat ; conclut « Non trouvé » / « À vérifier » quand ce n'est pas prouvé. | POC : 3 Validé, 1 À vérifier, 1 Non trouvé |
 
 ## Ce qui fonctionne partiellement
 
-*(rien de spécifique en attente ici pour l'instant)*
+| Fonction | Statut | Explication |
+| --- | --- | --- |
+| Collecte Cdiscount **automatique** | 🟡 | Fait manuellement (navigateur piloté) sur 5 produits ; **pas encore un collecteur scripté** reproductible. |
+| Récupération de l'EAN concurrent | 🟡 | Cdiscount **n'affiche pas l'EAN** → matching via réf/modèle + specs (fiable si référence discriminante). |
 
 ## Ce qui ne fonctionne pas (encore)
 
 | Fonction | Statut | Explication |
 | --- | --- | --- |
-| Chercher les offres concurrentes | ❌ | Amazon / Cdiscount / Cultura : pas encore construit. |
-| Vérifier le vrai matching produit | ❌ | Le moteur qui confirme « c'est bien le même produit » n'existe pas encore. |
-| Distinguer 1P / 3P | ❌ | Savoir si c'est l'enseigne ou un vendeur tiers : pas encore. |
-| Calculer les écarts de prix | ❌ | Rien à comparer tant que les prix concurrents ne sont pas collectés. |
+| Collecteur Cdiscount **scripté** (reproductible, en série) | ❌ | Le POC était piloté à la main ; il faut le rendre automatique pour 20/50 produits. |
+| Chercher Amazon / Cultura | ❌ | Volontairement plus tard (priorité Cdiscount d'abord). |
+| Calculer les écarts de prix | ❌ | **Bloqué** : on a les prix Cdiscount actuels, mais **pas les prix Cultura actuels** (absents du fichier). |
 
 ## Limites
 
@@ -75,14 +81,22 @@ Prochain grand pas (le risque n°1) : **récupérer des offres concurrentes fiab
 
 ## Travail en cours
 
-Étapes A/B/C : copie normalisée créée, lecteur adapté, diagnostic réel généré. **Sélection des
-5 produits proposée — en attente de validation de Marwan** avant de lancer le mini-POC Cdiscount.
+**Mini-POC Cdiscount terminé** (5 produits, navigateur local). Résultat : **faisable et fiable
+côté collecte** ; le point ouvert est la **preuve d'identité** (pas d'EAN affiché) et surtout
+l'**absence de prix Cultura actuels** pour comparer.
+
+### Résultats du POC Cdiscount (5 produits, 28/08)
+- Correctement matchés (Validé) : **3/5** · À vérifier : **1/5** · Non trouvé : **1/5**
+- Prix récupérés : **4/5** · Vendeurs + 1P/3P : **4/5** · Blocages techniques : **0**
+- Faux positifs correctement **rejetés** (variantes, packs, reconditionné, accessoires, homonymes).
+- Enseignement : la collecte Cdiscount marche en local sans contournement ; la fiabilité du
+  **matching** dépend d'une **référence discriminante** (n° de set, modèle) car l'EAN n'est pas exposé.
 
 ## Prochaine étape
 
-**Mini-POC Cdiscount** sur les 5 produits validés : peut-on récupérer des offres Cdiscount de façon
-**fiable et reproductible** (prix, vendeur, 1P/3P, livraison) pour alimenter Bench ? Comparer les
-méthodes possibles (dont Apify) sans construire d'architecture complexe.
+À décider ensemble : (1) **automatiser** la collecte Cdiscount (collecteur scripté) pour passer à
+20 produits ; et/ou (2) obtenir les **prix Cultura actuels** (export Claire / source interne) pour
+enfin **calculer des écarts**. Sans (2), Bench reste un « moteur d'offres concurrentes » sans comparaison.
 
 ## Questions pour Marwan
 
@@ -92,8 +106,11 @@ méthodes possibles (dont Apify) sans construire d'architecture complexe.
 
 ## Historique des avancées
 
+- **28/08/2026** — **Mini-POC Cdiscount** (navigateur local, 5 produits, ~6 min, 0 blocage) :
+  3 Validé / 1 À vérifier / 1 Non trouvé ; faux positifs rejetés ; aucun EAN concurrent affiché.
+  Détail complet dans `data/outputs/` (hors Git).
 - **28/08/2026** — Normalisation du Top 150 (EAN figés, original intact), lecteur adapté au vrai
   schéma, diagnostic réel généré (151 lignes, 100 % EAN valides, A=131/B=20/C=0). Sélection des
-  5 produits pour le POC Cdiscount proposée.
+  5 produits pour le POC Cdiscount proposée et validée.
 - **28/08/2026** — Reprise. Analyse du fichier Top 150 réel. Création de ce tableau de bord.
 - **23/08/2026** — Phase 0 (GitHub) + Phase 1 (lecture, validation EAN, tri A/B/C, diagnostic Excel, 17 tests).
