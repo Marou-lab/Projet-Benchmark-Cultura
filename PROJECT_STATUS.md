@@ -16,8 +16,8 @@ récupère les prix, et génère un **Excel de benchmark** qui répond à la que
 
 ## Avancement global
 
-**~20 %.** Les fondations (sauvegarde GitHub) et la première brique (lire/diagnostiquer un fichier)
-existent et sont testées. Le cœur — chercher et comparer les prix concurrents — reste à construire.
+**~30 %.** Fondations + lecture/diagnostic du **vrai fichier Top 150** opérationnels et testés.
+Prochain grand pas (le risque n°1) : **récupérer des offres concurrentes fiables** → mini-POC Cdiscount.
 
 ## Ce qui fonctionne
 
@@ -29,12 +29,12 @@ existent et sont testées. Le cœur — chercher et comparer les prix concurrent
 | Repérer les doublons | ✅ | Détecte quand un même EAN revient. | Testé sur le fichier réel |
 | Trier A / B / C | ✅ | A = comparable normalement, B = cas particulier, C = inexploitable. | Testé |
 | Générer un Excel de diagnostic | ✅ | Produit un Excel de synthèse. | Généré |
+| Lire le **vrai** fichier Top 150 | ✅ | Reconnaît EAN/Produit/Marque/Vendeur + VA TTC/Métier/Niveau 3/4. | Diagnostic réel généré |
+| Copie **normalisée** (EAN figés) | ✅ | EAN figés en valeurs → plus de dépendance au fichier externe ; original intact. | 151 lignes, hors Git |
 
 ## Ce qui fonctionne partiellement
 
-| Fonction | Statut | Explication |
-| --- | --- | --- |
-| Reconnaissance des colonnes | 🟡 | Bench reconnaît EAN/Produit/Marque/Vendeur, mais **pas encore** les colonnes propres à ce fichier (VA TTC, Métier, Niveau 3/4) ni l'absence de colonne « prix ». À adapter. |
+*(rien de spécifique en attente ici pour l'instant)*
 
 ## Ce qui ne fonctionne pas (encore)
 
@@ -58,10 +58,13 @@ existent et sont testées. Le cœur — chercher et comparer les prix concurrent
 ## Décisions prises
 
 - Stack **Python**, outil en **ligne de commande** (on lance une commande, pas de site web).
-- **GitHub privé** obligatoire ; **données réelles jamais poussées** en ligne.
+- **GitHub privé** obligatoire ; **données réelles jamais poussées** en ligne (confirmé).
 - **Anti-hallucination** : jamais de prix/vendeur inventé → `Non vérifié`.
 - Modèle **Produit → plusieurs Offres** (plateforme, vendeur, 1P/3P, prix), pas « un prix par plateforme ».
 - **Deux prix Cultura distincts** (référence interne vs 3P collecté), jamais fusionnés.
+- **Recherche ≠ Matching** : trouver un candidat n'est pas le valider (un résultat Cdiscount n'est jamais accepté automatiquement).
+- 1ʳᵉ plateforme = **Cdiscount** ; on démarre sur **5 produits** ; **Amazon plus tard** seulement si Cdiscount est maîtrisé.
+- `VA TTC / Qté` = `prix_moyen_vente_periode_ttc` (**indicateur historique**, jamais « prix actuel »).
 
 ## Décisions métier en attente
 
@@ -72,12 +75,14 @@ existent et sont testées. Le cœur — chercher et comparer les prix concurrent
 
 ## Travail en cours
 
-Diagnostic du fichier `data vente LQ top 150.xlsx` terminé (lecture seule, original intact).
+Étapes A/B/C : copie normalisée créée, lecteur adapté, diagnostic réel généré. **Sélection des
+5 produits proposée — en attente de validation de Marwan** avant de lancer le mini-POC Cdiscount.
 
 ## Prochaine étape
 
-Adapter la lecture à ce fichier réel + choisir un **échantillon représentatif de 5 produits**
-(univers variés) pour la première recherche de prix concurrents.
+**Mini-POC Cdiscount** sur les 5 produits validés : peut-on récupérer des offres Cdiscount de façon
+**fiable et reproductible** (prix, vendeur, 1P/3P, livraison) pour alimenter Bench ? Comparer les
+méthodes possibles (dont Apify) sans construire d'architecture complexe.
 
 ## Questions pour Marwan
 
@@ -87,5 +92,8 @@ Adapter la lecture à ce fichier réel + choisir un **échantillon représentati
 
 ## Historique des avancées
 
+- **28/08/2026** — Normalisation du Top 150 (EAN figés, original intact), lecteur adapté au vrai
+  schéma, diagnostic réel généré (151 lignes, 100 % EAN valides, A=131/B=20/C=0). Sélection des
+  5 produits pour le POC Cdiscount proposée.
 - **28/08/2026** — Reprise. Analyse du fichier Top 150 réel. Création de ce tableau de bord.
 - **23/08/2026** — Phase 0 (GitHub) + Phase 1 (lecture, validation EAN, tri A/B/C, diagnostic Excel, 17 tests).
