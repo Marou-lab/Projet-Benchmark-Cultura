@@ -119,6 +119,15 @@ faibles jamais seuls). Rejeu sur les mêmes 15 (test de **correction**, pas de g
 - **Conclusion : progrès réel mais 50 % reste insuffisant** → un **2ᵉ raffinement** est nécessaire
   **avant** de mesurer sur un nouveau panel. Détail : `data/outputs/correction_avant_apres_2026-08-28.md`.
 
+### 2ᵉ raffinement (tour 2) — 28/08
+Tokens génériques faibles + référence **corroborée** (marque/descripteur) + **contradictions
+critiques** (kit vs nu, lot, capacité, couleur, accessoire). Rejeu :
+- Non-régression A **5/5** ; **0 bon `Validé` perdu** ; régression du tour 1 (B3) **corrigée**.
+- **Exactitude des `Validé` toujours 50 %** : 2 faux `Validé` persistent, 2 causes distinctes —
+  (a) *artefact de titre* qui neutralise une contradiction (technique), (b) *référence = marque*
+  quand le produit n'a pas de modèle (règle). Détail : `data/outputs/correction_tour2_2026-08-28.md`.
+- **Bilan origine→tour 2 : faux `Validé` 3→2**, mais objectif V1 (précision) **pas encore atteint**.
+
 ### Résultats du POC Cdiscount (5 produits, 28/08)
 - Correctement matchés (Validé) : **3/5** · À vérifier : **1/5** · Non trouvé : **1/5**
 - Prix récupérés : **4/5** · Vendeurs + 1P/3P : **4/5** · Blocages techniques : **0**
@@ -128,10 +137,10 @@ faibles jamais seuls). Rejeu sur les mêmes 15 (test de **correction**, pas de g
 
 ## Prochaine étape
 
-**Discuter du 2ᵉ raffinement** (identifiant discriminant = mené par une lettre ou n° de set ; jetons
-courts menés par un chiffre = faibles ; cohérence kit/boîtier), l'appliquer, re-mesurer, **puis
-seulement** passer à un **nouveau panel jamais vu** pour la vraie mesure de généralisation. En
-parallèle : obtenir les **prix Cultura actuels** (export Claire) pour calculer des écarts.
+**Discuter du 3ᵉ raffinement** (2 fixes ciblés et généraux) : (1) *nettoyer les titres* à la collecte
+(fix technique → répare B6) ; (2) *ne jamais traiter la marque comme identifiant discriminant* →
+`À vérifier` si pas de vrai modèle (répare B12). L'appliquer, re-mesurer, **puis seulement** passer à
+un **nouveau panel inédit**. En parallèle : **prix Cultura actuels** (export Claire) pour les écarts.
 
 Principe retenu : **mieux vaut un `Validé` rare mais fiable** que des `Validé` nombreux mais faux.
 
@@ -143,6 +152,10 @@ Principe retenu : **mieux vaut un `Validé` rare mais fiable** que des `Validé`
 
 ## Historique des avancées
 
+- **28/08/2026** — **Matching 2ᵉ raffinement** (tokens faibles + référence corroborée +
+  contradictions critiques) + rejeu 3 états. Non-régression 5/5 ; B3 régression corrigée ; 0 bon
+  `Validé` perdu ; exactitude toujours 50 % (2 causes résiduelles : artefact de titre, référence=marque).
+  37 tests. 3ᵉ raffinement à discuter.
 - **28/08/2026** — **Correction matching (1ᵉʳ tour)** + rejeu des 20. Non-régression 5/5 ; exactitude
   des `Validé` 40 %→50 % ; 2 faux `Validé` corrigés mais 1 nouveau introduit (« 3D »/« 5a » pris pour
   des modèles). 2ᵉ raffinement à discuter avant un nouveau panel. 32 tests.
