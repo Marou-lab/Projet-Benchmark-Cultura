@@ -66,6 +66,36 @@ def _card_price(price_strings) -> float | None:
     return min(vals) if vals else None
 
 
+# Éléments de page parasites collés au titre produit (à retirer AVANT le matching,
+# sans jamais toucher aux références : on coupe au 1er marqueur, on ne sépare pas les caractères).
+_JUNK_PREFIX_RE = re.compile(
+    r"^(?:Meilleur prix\s*\??|Bon plan|Promo(?:Sponsoris\w*\??)?|Sponsoris\w*\??|"
+    r"Livraison gratuit\w*i?|Prix de comparaison|Plus responsable|PUBLICITE)\s*",
+    re.IGNORECASE)
+_JUNK_CUT_RE = re.compile(
+    r"\d[.,]\d\s*/\s*5"                     # note « 4,6 / 5 »
+    r"|\d+\s*avis"                          # « 299 avis »
+    r"|\d[\d\s  ]*,\d{2}\s*€"     # prix « 35,50 € »
+    r"|Ajouter|Voir\b|Pr[ée]commander"
+    r"|Livraison gratuit|Prix de comparaison|Moins cher qu|Cdiscount à volont"
+    r"|Sponsoris|PUBLICITE",
+    re.IGNORECASE)
+
+
+def _clean_title(raw: str) -> str:
+    """Restaure un titre produit propre (retire notes/avis/prix/UI collés)."""
+    t = (raw or "").strip()
+    for _ in range(3):                       # préfixes UI éventuellement empilés
+        t2 = _JUNK_PREFIX_RE.sub("", t).lstrip(" ?-:•").strip()
+        if t2 == t:
+            break
+        t = t2
+    m = _JUNK_CUT_RE.search(t)               # couper au 1er élément parasite
+    if m and m.start() > 0:
+        t = t[:m.start()]
+    return re.sub(r"\s+", " ", t).strip(" -•|:?")
+
+
 def _search_url(query: str) -> str:
     return SEARCH_URL.format(q=urllib.parse.quote_plus(query))
 
@@ -90,7 +120,7 @@ def search(page, query: str) -> tuple[list[Candidate], bool]:
     if _looks_blocked(page):
         return [], True
     raw = page.evaluate(_JS_CANDIDATES)
-    cands = [Candidate(title=r["title"], url=r["href"], price=_card_price(r["prices"]))
+    cands = [Candidate(title=_clean_title(r["title"]), url=r["href"], price=_card_price(r["prices"]))
              for r in raw]
     return cands, False
 

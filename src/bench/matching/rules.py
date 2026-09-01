@@ -56,6 +56,16 @@ _ACCESSORY = ("etui", "housse", "coque", "filament", "lame", "tapis de", "pare-s
               "protection", "verre trempe", "sacoche", "dragonne", "trepied",
               "kit de nettoyage", "piece", "pieces")
 
+# Familles de TYPE de produit : deux familles distinctes = produits incompatibles.
+# (Général, non lié à un produit précis ; ne couvre que des types nettement différents.)
+_DEVICE_TYPES = {
+    "livre": ("livre", "guide", "manuel", "roman"),
+    "stylo": ("stylo",),
+    "ordinateur": ("macbook", "ordinateur portable", "laptop", "notebook"),
+    "tablette": ("ipad", "tablette"),
+    "telephone": ("smartphone", "telephone portable", "ecran lcd"),
+}
+
 
 def _norm(s: str) -> str:
     s = unicodedata.normalize("NFKD", str(s or ""))
@@ -95,13 +105,21 @@ def extract_reference(name: str) -> str | None:
     return None
 
 
+def _discriminant_ref(product: Product) -> str | None:
+    """Référence du produit, SAUF si elle se réduit à la marque (non discriminante)."""
+    ref = extract_reference(product.name)
+    if ref and _norm(ref) in set(_norm(product.brand).split()):
+        return None
+    return ref
+
+
 def _significant_words(name: str) -> list[str]:
     words = re.findall(r"[A-Za-zÀ-ÿ]{3,}", name or "")
     return [w for w in (_norm(w) for w in words) if w not in _STOP]
 
 
 def build_query(product: Product) -> str:
-    ref = extract_reference(product.name)
+    ref = _discriminant_ref(product)
     brand = product.brand.strip()
     if ref:
         return f"{brand} {ref}".strip()
@@ -161,6 +179,11 @@ def _is_accessory(title: str) -> bool:
                for w in _ACCESSORY)
 
 
+def _device_types(text: str) -> set[str]:
+    t = _norm(text)
+    return {tag for tag, kws in _DEVICE_TYPES.items() if any(k in t for k in kws)}
+
+
 def critical_contradiction(product_name: str, candidate_title: str) -> str:
     """Renvoie la 1re contradiction critique détectée (ou '' si aucune)."""
     pc, cc = _capacities(product_name), _capacities(candidate_title)
@@ -169,6 +192,10 @@ def critical_contradiction(product_name: str, candidate_title: str) -> str:
     pcol, ccol = _explicit_colors(product_name), _explicit_colors(candidate_title)
     if pcol and ccol and pcol.isdisjoint(ccol):
         return "couleur différente"
+    # Type/nature de produit manifestement incompatible (stylo vs livre, ordi vs tablette…).
+    pt, ct = _device_types(product_name), _device_types(candidate_title)
+    if pt and ct and pt.isdisjoint(ct):
+        return "type de produit différent"
     if _is_kit(product_name) and _is_bare(candidate_title) and not _is_kit(candidate_title):
         return "kit vs boîtier nu"
     if _is_accessory(candidate_title):
@@ -180,7 +207,7 @@ def critical_contradiction(product_name: str, candidate_title: str) -> str:
 
 
 def evaluate(product: Product, candidates: list[Candidate]) -> dict:
-    ref = extract_reference(product.name)
+    ref = _discriminant_ref(product)
     ref_norm = _norm(ref) if ref else None
     brand_norm = _norm(product.brand.split()[0]) if product.brand.strip() else None
     has_brand = bool(brand_norm) and brand_norm not in _STOP and len(brand_norm) >= 3

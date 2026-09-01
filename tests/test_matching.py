@@ -189,3 +189,22 @@ def test_contradictions_critiques_unitaires():
         == "couleur différente"
     assert rules.critical_contradiction("SSD 1 To", "SSD 512 Go") == "capacité différente"
     assert rules.critical_contradiction("Vibox IV-590 PC Gamer", "Vibox IV-590 PC Gamer") == ""
+
+
+# --- 3e raffinement : marque ≠ identifiant + cohérence de type ---
+
+def test_marque_seule_ne_valide_pas():
+    # Produit sans modèle : la « référence » se réduit à la marque -> jamais Validé.
+    p = _product("Stylo 3D KIT - START+ - 3Doodler", "3Doodler", 55)
+    pen = [Candidate(title="Stylo 3D 3Doodler Start Plus", url="/f-1-pen.html", price=59.0)]
+    assert rules.evaluate(p, pen)["status"] != "Validé"
+    book = [Candidate(title="Livre 3Doodler", url="/f-1-book.html", price=35.5)]
+    assert rules.evaluate(p, book)["status"] != "Validé"
+
+
+def test_type_de_produit_incompatible():
+    assert rules.critical_contradiction("Stylo 3D 3Doodler", "Livre 3Doodler") \
+        == "type de produit différent"
+    assert rules.critical_contradiction("Apple MacBook Air M4", "Apple iPad Pro M4") \
+        == "type de produit différent"
+    assert rules.critical_contradiction("Vibox IV-590 PC Gamer", "Vibox IV-590 PC Gamer") == ""
