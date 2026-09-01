@@ -18,8 +18,10 @@ récupère les prix, et génère un **Excel de benchmark** qui répond à la que
 
 **~50 %.** Fondations + lecture/diagnostic du **vrai fichier Top 150** opérationnels. **Collecteur
 Cdiscount automatisé** (commande lançable) : il **reproduit tout seul les conclusions du POC sur les
-5 produits (5/5)** — trouve, rejette les faux positifs, valide ou refuse. Reste : la **montée en
-charge (20 → 50)**, la **stabilité du navigateur**, et les **prix Cultura actuels** (pour les écarts).
+5 produits (5/5)** — trouve, rejette les faux positifs, valide ou refuse. ⚠ Validé **uniquement sur
+ces 5 références de contrôle** ; la **robustesse générale sur de nouveaux produits reste à démontrer**.
+Reste : la **montée en charge (20 → 50)**, la **stabilité du navigateur**, et les **prix Cultura
+actuels** (pour les écarts).
 
 ## Ce qui fonctionne
 
