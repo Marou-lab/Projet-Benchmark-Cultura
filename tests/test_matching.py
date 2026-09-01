@@ -143,3 +143,49 @@ def test_conflit_capacite_downgrade():
     cands = [Candidate(title="BrandX Model-2200 512 Go SSD", url="/f-1-x.html", price=480.0)]
     d = rules.evaluate(p, cands)
     assert d["status"] != "Validé"
+
+
+# --- 2e raffinement : tokens génériques faibles + contradictions critiques ---
+
+def test_techno_generique_est_faible():
+    # « 3D » et « 4K » ne sont pas des identifiants discriminants.
+    assert rules.extract_reference("Smart TV 4K 55 pouces") is None
+    assert rules.extract_reference("Stylo 3D KIT - START+ - 3Doodler") != "3D"
+
+
+def test_accessoire_jamais_valide():
+    # B12 : un « étui pour » est un accessoire, pas le produit principal.
+    p = _product("Stylo 3D KIT - START+ - 3Doodler", "3Doodler", 55)
+    cands = [Candidate(title="Étui pour 3Doodler Start+ Essentials - Boîte Rangement Stylo 3D",
+                       url="/f-1-etui.html", price=24.99)]
+    d = rules.evaluate(p, cands)
+    assert d["status"] != "Validé"
+
+
+def test_kit_vs_boitier_nu():
+    # B6 : produit = kit (+objectif) ; candidat « Nu » (boîtier seul) -> pas Validé.
+    p = _product("Canon EOS R7 + RF-S 18-150mm F3.5-6.3 IS STM", "Canon", 1700)
+    nu = [Candidate(title="CANON EOS R7 Nu", url="/f-1-nu.html", price=1051.0)]
+    assert rules.evaluate(p, nu)["status"] != "Validé"
+    # …mais le vrai kit reste validé.
+    kit = [Candidate(title="CANON EOS R7 + RF-S 18-150mm F3.5-6.3 IS STM",
+                     url="/f-1-kit.html", price=1365.49)]
+    assert rules.evaluate(p, kit)["status"] == "Validé"
+
+
+def test_reference_non_corroboree_ignoree():
+    # B3 : « Cameo 5a » vs « Pixel 5A » — coïncidence de code, ni marque ni descripteur -> écarté.
+    p = _product("Silhouette Cameo 5a Rose", "Silhouette", 290)
+    cands = [Candidate(title="ECRAN LCD GOOGLE PIXEL 5A 5G SANS CHASSIS (Original)",
+                       url="/f-1-pixel.html", price=314.99)]
+    d = rules.evaluate(p, cands)
+    assert d["status"] == "Non trouvé"
+
+
+def test_contradictions_critiques_unitaires():
+    assert rules.critical_contradiction("Lunettes éclipse Lot de 5", "Lunettes éclipse Lot de 3") \
+        == "quantité/lot différente"
+    assert rules.critical_contradiction("Clavier X-100 Rouge", "Clavier X-100 Bleu") \
+        == "couleur différente"
+    assert rules.critical_contradiction("SSD 1 To", "SSD 512 Go") == "capacité différente"
+    assert rules.critical_contradiction("Vibox IV-590 PC Gamer", "Vibox IV-590 PC Gamer") == ""
