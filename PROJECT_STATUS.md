@@ -109,7 +109,15 @@ d'un **contrôle manuel** des 15 nouveaux. Résultats (détail dans `data/output
 - **3 erreurs, toutes des faux `Validé`** (Canon R7→R100, MacBook→iPad, Canson couleur→blanc),
   dues à la **règle d'extraction de référence** (objectif/année/dimension pris pour la référence).
 
-**Décision : ne PAS corriger les règles avant d'en avoir discuté** (pour ne pas fausser la mesure).
+### Correction ciblée du matching (1ᵉʳ tour) — 28/08
+Règle générale conservatrice appliquée (identifiant discriminant requis pour `Validé` ; jetons
+faibles jamais seuls). Rejeu sur les mêmes 15 (test de **correction**, pas de généralisation) :
+- **Non-régression A : 5/5** intacte ; **aucun bon `Validé` perdu**.
+- **2 pires faux `Validé` corrigés** (iPad→À vérifier, papier blanc→À vérifier).
+- **Exactitude des `Validé` : 40 % → 50 %** — mais **1 nouveau faux `Validé`** introduit (un étui
+  accessoire), cause : jetons courts menés par un chiffre (« 3D », « 5a ») encore pris pour des modèles.
+- **Conclusion : progrès réel mais 50 % reste insuffisant** → un **2ᵉ raffinement** est nécessaire
+  **avant** de mesurer sur un nouveau panel. Détail : `data/outputs/correction_avant_apres_2026-08-28.md`.
 
 ### Résultats du POC Cdiscount (5 produits, 28/08)
 - Correctement matchés (Validé) : **3/5** · À vérifier : **1/5** · Non trouvé : **1/5**
@@ -120,12 +128,12 @@ d'un **contrôle manuel** des 15 nouveaux. Résultats (détail dans `data/output
 
 ## Prochaine étape
 
-**Discuter des résultats du test de généralisation**, puis **corriger la règle d'extraction de
-référence** (cause des 3 faux `Validé`) et **re-mesurer** sur les mêmes 15 produits. En parallèle :
-obtenir les **prix Cultura actuels** (export Claire) pour enfin **calculer des écarts**.
+**Discuter du 2ᵉ raffinement** (identifiant discriminant = mené par une lettre ou n° de set ; jetons
+courts menés par un chiffre = faibles ; cohérence kit/boîtier), l'appliquer, re-mesurer, **puis
+seulement** passer à un **nouveau panel jamais vu** pour la vraie mesure de généralisation. En
+parallèle : obtenir les **prix Cultura actuels** (export Claire) pour calculer des écarts.
 
-Principe retenu : **mieux vaut un `Validé` très fiable et plus rare** que des `Validé` nombreux mais
-faux. Les corrections viseront à faire **basculer les cas douteux de `Validé` vers `À vérifier`**.
+Principe retenu : **mieux vaut un `Validé` rare mais fiable** que des `Validé` nombreux mais faux.
 
 ## Questions pour Marwan
 
@@ -135,6 +143,9 @@ faux. Les corrections viseront à faire **basculer les cas douteux de `Validé` 
 
 ## Historique des avancées
 
+- **28/08/2026** — **Correction matching (1ᵉʳ tour)** + rejeu des 20. Non-régression 5/5 ; exactitude
+  des `Validé` 40 %→50 % ; 2 faux `Validé` corrigés mais 1 nouveau introduit (« 3D »/« 5a » pris pour
+  des modèles). 2ᵉ raffinement à discuter avant un nouveau panel. 32 tests.
 - **28/08/2026** — **Test de généralisation (20 produits, panel 11 métiers)** + contrôle manuel des
   15 nouveaux. Non-régression 5/5 ; exactitude des `Validé` = **40 %** sur les nouveaux ; 3 faux
   `Validé` analysés (cause : extraction de référence). Règles **non modifiées** (à discuter).
