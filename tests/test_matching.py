@@ -208,3 +208,16 @@ def test_type_de_produit_incompatible():
     assert rules.critical_contradiction("Apple MacBook Air M4", "Apple iPad Pro M4") \
         == "type de produit différent"
     assert rules.critical_contradiction("Vibox IV-590 PC Gamer", "Vibox IV-590 PC Gamer") == ""
+
+
+def test_boitier_nu_prime_sur_bundle():
+    # B6 : « R7 Nu + Sac + Carte SD » (boîtier sans objectif, bundlé) ≠ kit avec objectif.
+    p = _product("Canon EOS R7 + RF-S 18-150mm F3.5-6.3 IS STM", "Canon", 1700)
+    cands = [Candidate(title="CANON EOS R7 Nu + Sac + Carte SD 8 Go",
+                       url="/f-1-nubundle.html", price=1077.0)]
+    assert rules.critical_contradiction(p.name, cands[0].title) == "boîtier nu vs kit avec objectif"
+    assert rules.evaluate(p, cands)["status"] != "Validé"
+    # …mais le vrai kit (avec objectif, sans « nu ») reste validé.
+    kit = [Candidate(title="CANON EOS R7 + RF-S 18-150mm + Sac + Carte SD",
+                     url="/f-1-kit2.html", price=1500.0)]
+    assert rules.evaluate(p, kit)["status"] == "Validé"

@@ -169,8 +169,8 @@ def _is_kit(text: str) -> bool:
 
 def _is_bare(text: str) -> bool:
     t = _norm(text)
-    return bool(re.search(r"\bnu\b", t)) or "boitier nu" in t or "body only" in t \
-        or "sans objectif" in t
+    return bool(re.search(r"\bnu\b", t)) or "boitier nu" in t or "boitier seul" in t \
+        or "body only" in t or "sans objectif" in t
 
 
 def _is_accessory(title: str) -> bool:
@@ -196,8 +196,10 @@ def critical_contradiction(product_name: str, candidate_title: str) -> str:
     pt, ct = _device_types(product_name), _device_types(candidate_title)
     if pt and ct and pt.isdisjoint(ct):
         return "type de produit différent"
-    if _is_kit(product_name) and _is_bare(candidate_title) and not _is_kit(candidate_title):
-        return "kit vs boîtier nu"
+    # « boîtier nu / seul / sans objectif » = définitif (sans objectif) : prime sur un éventuel
+    # bundle d'accessoires (un boîtier nu + sac + carte SD n'est jamais un kit avec objectif).
+    if _is_kit(product_name) and _is_bare(candidate_title):
+        return "boîtier nu vs kit avec objectif"
     if _is_accessory(candidate_title):
         return "accessoire vs produit principal"
     plot, clot = _lot_qty(product_name), _lot_qty(candidate_title)
