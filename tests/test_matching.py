@@ -81,3 +81,65 @@ def test_candidats_pertinents_sans_reference_donne_a_verifier():
         url="/f-1-ps5.html", price=599.0)]
     d = rules.evaluate(p, cands)
     assert d["status"] == "À vérifier" and d["confidence"] == "Moyenne"
+
+
+# --- Nouvelles règles : jetons faibles & preuve d'identité (précision > couverture) ---
+
+def test_extract_reference_ignore_jetons_faibles():
+    # Objectif (18-150mm) et ouverture (F3.5) ignorés -> le modèle R7 est la référence.
+    assert rules.extract_reference("CANON EOS R7 + RF-S 18-150mm F3.5-6.3 IS STM") == "R7"
+    # Année ignorée -> M4 est la référence.
+    assert rules.extract_reference("Apple MacBook Air M4 (2025)") == "M4"
+    # Dimension + grammage seuls -> aucune référence discriminante.
+    assert rules.extract_reference("Pochette papier à dessin couleur Canson 24x32 180g") is None
+
+
+def test_mauvais_boitier_non_valide():
+    # B6 : la référence du produit (R7) n'est PAS sur le candidat (R100) -> pas Validé.
+    p = _product("Canon EOS R7 + RF-S 18-150mm F3.5-6.3 IS STM", "Canon", 1700)
+    cands = [Candidate(title="CANON EOS R100 + RF-S 18-150mm F3.5-6.3 IS STM",
+                       url="/f-1-r100.html", price=808.0)]
+    d = rules.evaluate(p, cands)
+    assert d["status"] != "Validé"
+
+
+def test_bon_boitier_valide():
+    p = _product("Canon EOS R7 + RF-S 18-150mm F3.5-6.3 IS STM", "Canon", 1700)
+    cands = [Candidate(title="CANON EOS R7 + RF-S 18-150mm F3.5-6.3 IS STM",
+                       url="/f-1-r7.html", price=1365.49)]
+    d = rules.evaluate(p, cands)
+    assert d["status"] == "Validé"
+
+
+def test_macbook_ne_valide_pas_un_ipad():
+    # B7 : référence courte (M4) présente mais descripteur 'macbook' absent -> pas Validé.
+    p = _product("Apple MacBook Air M4 (2025) 15 pouces", "Apple", 1379)
+    cands = [Candidate(title="APPLE - iPad Pro M4 (2025) - 11 pouces - 256Go",
+                       url="/f-1-ipad.html", price=900.0)]
+    d = rules.evaluate(p, cands)
+    assert d["status"] != "Validé"
+
+
+def test_jeton_faible_seul_ne_valide_pas():
+    # B14 : pas de vraie référence (dimension seule) -> jamais Validé.
+    p = _product("Pochette papier à dessin couleur Canson 24x32 180g", "Canson", 12)
+    cands = [Candidate(title="Papier à dessin CANSON blanc 24x32 180g 12 feuilles",
+                       url="/f-1-canson.html", price=10.21)]
+    d = rules.evaluate(p, cands)
+    assert d["status"] != "Validé"
+
+
+def test_modele_long_seul_suffit():
+    # Référence longue (ZU707T) discriminante -> Validé sans descripteur additionnel.
+    p = _product("Optoma ZU707T Vidéoprojecteur Full HD", "Optoma", 2700)
+    cands = [Candidate(title="Optoma CinemaX ZU707T - projecteur laser",
+                       url="/f-1-optoma.html", price=2614.64)]
+    d = rules.evaluate(p, cands)
+    assert d["status"] == "Validé"
+
+
+def test_conflit_capacite_downgrade():
+    p = _product("BrandX Model-2200 1 To SSD", "BrandX", 500)
+    cands = [Candidate(title="BrandX Model-2200 512 Go SSD", url="/f-1-x.html", price=480.0)]
+    d = rules.evaluate(p, cands)
+    assert d["status"] != "Validé"
