@@ -16,10 +16,10 @@ récupère les prix, et génère un **Excel de benchmark** qui répond à la que
 
 ## Avancement global
 
-**~40 %.** Fondations + lecture/diagnostic du **vrai fichier Top 150** opérationnels. **Mini-POC
-Cdiscount réussi** (navigateur local, sans blocage) : Bench sait déjà trouver un candidat, **rejeter
-les faux positifs** et **refuser un match non prouvé**. Reste : les **prix Cultura actuels** (pour
-calculer les écarts) et l'industrialisation de la collecte.
+**~50 %.** Fondations + lecture/diagnostic du **vrai fichier Top 150** opérationnels. **Collecteur
+Cdiscount automatisé** (commande lançable) : il **reproduit tout seul les conclusions du POC sur les
+5 produits (5/5)** — trouve, rejette les faux positifs, valide ou refuse. Reste : la **montée en
+charge (20 → 50)**, la **stabilité du navigateur**, et les **prix Cultura actuels** (pour les écarts).
 
 ## Ce qui fonctionne
 
@@ -34,22 +34,35 @@ calculer les écarts) et l'industrialisation de la collecte.
 | Lire le **vrai** fichier Top 150 | ✅ | Reconnaît EAN/Produit/Marque/Vendeur + VA TTC/Métier/Niveau 3/4. | Diagnostic réel généré |
 | Copie **normalisée** (EAN figés) | ✅ | EAN figés en valeurs → plus de dépendance au fichier externe ; original intact. | 151 lignes, hors Git |
 | Lire une page Cdiscount (navigateur local) | ✅ | Ouvre la recherche + la fiche, lit prix/vendeur/livraison/1P-3P. | POC 5 produits, 0 blocage |
-| Rejeter les faux positifs / refuser un faux match | ✅ | Ne prend pas le 1ᵉʳ résultat ; conclut « Non trouvé » / « À vérifier » quand ce n'est pas prouvé. | POC : 3 Validé, 1 À vérifier, 1 Non trouvé |
+| Rejeter les faux positifs / refuser un faux match | ✅ | Ne prend pas le 1ᵉʳ résultat ; conclut « Non trouvé » / « À vérifier » quand ce n'est pas prouvé. | POC + collecteur auto |
+| **Collecteur Cdiscount automatisé** (commande) | ✅ | `bench collect-cdiscount <fichier>` : recherche + matching + statut/confiance, tout seul. | **Reproduit le POC 5/5** ; 25 tests |
+| Matching séparé de la collecte | ✅ | Les règles de décision sont testées **hors réseau** (rapide, reproductible). | 8 tests dédiés |
 
 ## Ce qui fonctionne partiellement
 
 | Fonction | Statut | Explication |
 | --- | --- | --- |
-| Collecte Cdiscount **automatique** | 🟡 | Fait manuellement (navigateur piloté) sur 5 produits ; **pas encore un collecteur scripté** reproductible. |
+| Stabilité du navigateur | 🟡 | Le navigateur **visible** peut planter en série ; le collecteur **relance et réessaie** (sinon « Non vérifié »). À fiabiliser pour 50 produits. |
 | Récupération de l'EAN concurrent | 🟡 | Cdiscount **n'affiche pas l'EAN** → matching via réf/modèle + specs (fiable si référence discriminante). |
+| Candidat retenu en « À vérifier » | 🟡 | Le statut est correct, mais le candidat *proposé* peut être imparfait (ex. PS5) → contrôle humain. |
 
 ## Ce qui ne fonctionne pas (encore)
 
 | Fonction | Statut | Explication |
 | --- | --- | --- |
-| Collecteur Cdiscount **scripté** (reproductible, en série) | ❌ | Le POC était piloté à la main ; il faut le rendre automatique pour 20/50 produits. |
+| Collecte à grande échelle (20 → 50) | ❌ | Le collecteur marche sur 5 ; reste à valider fiabilité + stabilité sur 20 puis 50. |
 | Chercher Amazon / Cultura | ❌ | Volontairement plus tard (priorité Cdiscount d'abord). |
 | Calculer les écarts de prix | ❌ | **Bloqué** : on a les prix Cdiscount actuels, mais **pas les prix Cultura actuels** (absents du fichier). |
+
+### Découverte technique importante (28/08)
+Un programme qui télécharge simplement les pages **ne voit pas les produits** (affichés par du
+JavaScript). Il faut un **vrai navigateur** local. Et Cdiscount **bloque le navigateur automatisé
+*invisible*** (erreur « Accès bloqué » / 403) : seul le navigateur **visible** passe. Le collecteur
+fonctionne donc **fenêtre ouverte**, **sans aucun contournement** (règle assumée). Comment le lancer :
+
+```
+python -m bench collect-cdiscount data/samples/top150_normalise.xlsx --limit 5 --out data/outputs/collecte.xlsx
+```
 
 ## Limites
 
@@ -71,6 +84,8 @@ calculer les écarts) et l'industrialisation de la collecte.
 - **Recherche ≠ Matching** : trouver un candidat n'est pas le valider (un résultat Cdiscount n'est jamais accepté automatiquement).
 - 1ʳᵉ plateforme = **Cdiscount** ; on démarre sur **5 produits** ; **Amazon plus tard** seulement si Cdiscount est maîtrisé.
 - `VA TTC / Qté` = `prix_moyen_vente_periode_ttc` (**indicateur historique**, jamais « prix actuel »).
+- Collecte = **navigateur local visible**, **sans contournement** (pas de proxy/captcha/anti-détection). Un blocage = résultat à mesurer, pas à forcer.
+- **Recherche ≠ Matching** traduit dans le code : `collectors/` (trouve) séparé de `matching/` (décide).
 
 ## Décisions métier en attente
 
@@ -81,9 +96,10 @@ calculer les écarts) et l'industrialisation de la collecte.
 
 ## Travail en cours
 
-**Mini-POC Cdiscount terminé** (5 produits, navigateur local). Résultat : **faisable et fiable
-côté collecte** ; le point ouvert est la **preuve d'identité** (pas d'EAN affiché) et surtout
-l'**absence de prix Cultura actuels** pour comparer.
+**Collecteur Cdiscount automatisé construit et testé** : il reproduit les conclusions du POC sur les
+5 produits (5/5), tout seul. Deux bugs trouvés et corrigés en cours de route (règle « bundle » trop
+large ; nom de marque = mot courant), avec tests de non-régression. Points ouverts : **stabilité du
+navigateur** en série, **preuve d'identité** (pas d'EAN affiché), **absence de prix Cultura actuels**.
 
 ### Résultats du POC Cdiscount (5 produits, 28/08)
 - Correctement matchés (Validé) : **3/5** · À vérifier : **1/5** · Non trouvé : **1/5**
@@ -94,9 +110,10 @@ l'**absence de prix Cultura actuels** pour comparer.
 
 ## Prochaine étape
 
-À décider ensemble : (1) **automatiser** la collecte Cdiscount (collecteur scripté) pour passer à
-20 produits ; et/ou (2) obtenir les **prix Cultura actuels** (export Claire / source interne) pour
-enfin **calculer des écarts**. Sans (2), Bench reste un « moteur d'offres concurrentes » sans comparaison.
+**Passer à 20 produits** (échantillon élargi) pour mesurer la montée en charge : taux de matching,
+faux positifs, stabilité, temps. En parallèle : obtenir les **prix Cultura actuels** (export Claire)
+pour enfin **calculer des écarts**. Sans eux, Bench reste un « moteur d'offres concurrentes » fiable
+mais sans comparaison chiffrée.
 
 ## Questions pour Marwan
 
@@ -106,6 +123,9 @@ enfin **calculer des écarts**. Sans (2), Bench reste un « moteur d'offres conc
 
 ## Historique des avancées
 
+- **28/08/2026** — **Collecteur Cdiscount automatisé** (commande `bench collect-cdiscount`) :
+  reproduit le POC 5/5 en autonomie. Découvertes : téléchargement simple insuffisant (JavaScript) ;
+  navigateur invisible bloqué (403), visible OK. 2 bugs de matching corrigés + tests. 25 tests au total.
 - **28/08/2026** — **Mini-POC Cdiscount** (navigateur local, 5 produits, ~6 min, 0 blocage) :
   3 Validé / 1 À vérifier / 1 Non trouvé ; faux positifs rejetés ; aucun EAN concurrent affiché.
   Détail complet dans `data/outputs/` (hors Git).

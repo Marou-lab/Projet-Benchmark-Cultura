@@ -3,7 +3,7 @@ name = "bench"
 version = "0.0.0"
 description = "Bench — aide à la décision sur le positionnement prix Marketplace"
 requires-python = ">=3.11"
-dependencies = ["openpyxl>=3.1"]
+dependencies = ["openpyxl>=3.1", "playwright>=1.40"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.5"]
@@ -20,6 +20,10 @@ where = ["src"]
 
 [tool.ruff]
 line-length = 100
+
+[tool.ruff.lint.per-file-ignores]
+# Le collecteur capture volontairement les erreurs navigateur (robustesse).
+"src/bench/collectors/**" = ["BLE001", "S110", "DTZ005"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
