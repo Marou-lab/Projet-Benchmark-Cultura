@@ -98,10 +98,18 @@ python -m bench collect-cdiscount data/samples/top150_normalise.xlsx --limit 5 -
 
 ## Travail en cours
 
-**Collecteur Cdiscount automatisé construit et testé** : il reproduit les conclusions du POC sur les
-5 produits (5/5), tout seul. Deux bugs trouvés et corrigés en cours de route (règle « bundle » trop
-large ; nom de marque = mot courant), avec tests de non-régression. Points ouverts : **stabilité du
-navigateur** en série, **preuve d'identité** (pas d'EAN affiché), **absence de prix Cultura actuels**.
+**Test de généralisation sur 20 produits** (5 contrôle A + 15 nouveaux B), règles **gelées**, suivi
+d'un **contrôle manuel** des 15 nouveaux. Résultats (détail dans `data/outputs/`, hors Git) :
+
+- **Non-régression (A)** : **5/5** identiques au POC. ✅ Aucune régression.
+- **Généralisation (B, 15 nouveaux)** : 0 échec technique, ~5,7 s/produit ; couverture 15/15 ;
+  Validé 5 · À vérifier 8 · Non trouvé 2.
+- **Fiabilité réelle mesurée** : **exactitude des `Validé` = 2/5 (40 %)** ⚠️ ; `Non trouvé` 2/2 corrects ;
+  les 8 `À vérifier` sont des **flags justifiés** (Bench n'a pas sur-validé).
+- **3 erreurs, toutes des faux `Validé`** (Canon R7→R100, MacBook→iPad, Canson couleur→blanc),
+  dues à la **règle d'extraction de référence** (objectif/année/dimension pris pour la référence).
+
+**Décision : ne PAS corriger les règles avant d'en avoir discuté** (pour ne pas fausser la mesure).
 
 ### Résultats du POC Cdiscount (5 produits, 28/08)
 - Correctement matchés (Validé) : **3/5** · À vérifier : **1/5** · Non trouvé : **1/5**
@@ -112,10 +120,12 @@ navigateur** en série, **preuve d'identité** (pas d'EAN affiché), **absence d
 
 ## Prochaine étape
 
-**Passer à 20 produits** (échantillon élargi) pour mesurer la montée en charge : taux de matching,
-faux positifs, stabilité, temps. En parallèle : obtenir les **prix Cultura actuels** (export Claire)
-pour enfin **calculer des écarts**. Sans eux, Bench reste un « moteur d'offres concurrentes » fiable
-mais sans comparaison chiffrée.
+**Discuter des résultats du test de généralisation**, puis **corriger la règle d'extraction de
+référence** (cause des 3 faux `Validé`) et **re-mesurer** sur les mêmes 15 produits. En parallèle :
+obtenir les **prix Cultura actuels** (export Claire) pour enfin **calculer des écarts**.
+
+Principe retenu : **mieux vaut un `Validé` très fiable et plus rare** que des `Validé` nombreux mais
+faux. Les corrections viseront à faire **basculer les cas douteux de `Validé` vers `À vérifier`**.
 
 ## Questions pour Marwan
 
@@ -125,6 +135,9 @@ mais sans comparaison chiffrée.
 
 ## Historique des avancées
 
+- **28/08/2026** — **Test de généralisation (20 produits, panel 11 métiers)** + contrôle manuel des
+  15 nouveaux. Non-régression 5/5 ; exactitude des `Validé` = **40 %** sur les nouveaux ; 3 faux
+  `Validé` analysés (cause : extraction de référence). Règles **non modifiées** (à discuter).
 - **28/08/2026** — **Collecteur Cdiscount automatisé** (commande `bench collect-cdiscount`) :
   reproduit le POC 5/5 en autonomie. Découvertes : téléchargement simple insuffisant (JavaScript) ;
   navigateur invisible bloqué (403), visible OK. 2 bugs de matching corrigés + tests. 25 tests au total.
