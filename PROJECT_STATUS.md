@@ -128,6 +128,16 @@ critiques** (kit vs nu, lot, capacité, couleur, accessoire). Rejeu :
   quand le produit n'a pas de modèle (règle). Détail : `data/outputs/correction_tour2_2026-08-28.md`.
 - **Bilan origine→tour 2 : faux `Validé` 3→2**, mais objectif V1 (précision) **pas encore atteint**.
 
+### 3ᵉ raffinement (tour 3, dernier sur ces 15) — 28/08
+Nettoyage des titres (collecte) + marque ≠ identifiant + cohérence du type de produit. Rejeu :
+- Non-régression A **5/5** ; **0 bon `Validé` perdu** ; **B12 corrigé**.
+- **Faux `Validé` : 3 → 1** (seul **B6** reste : boîtier « nu »+sac vs kit à objectif) ;
+  **exactitude des `Validé` : 40 % → 67 %**.
+- Défauts connus traités : B7, B14, B3, B12. B6 documenté (cohérence composant/objectif) —
+  à valider sur le **prochain panel inédit**, plus sur ces 15.
+- Détail : `data/outputs/correction_finale_tour3_2026-08-28.md`.
+- **On arrête d'optimiser sur ces 15** (ils ont servi à 3 cycles → plus une mesure indépendante).
+
 ### Résultats du POC Cdiscount (5 produits, 28/08)
 - Correctement matchés (Validé) : **3/5** · À vérifier : **1/5** · Non trouvé : **1/5**
 - Prix récupérés : **4/5** · Vendeurs + 1P/3P : **4/5** · Blocages techniques : **0**
@@ -137,10 +147,10 @@ critiques** (kit vs nu, lot, capacité, couleur, accessoire). Rejeu :
 
 ## Prochaine étape
 
-**Discuter du 3ᵉ raffinement** (2 fixes ciblés et généraux) : (1) *nettoyer les titres* à la collecte
-(fix technique → répare B6) ; (2) *ne jamais traiter la marque comme identifiant discriminant* →
-`À vérifier` si pas de vrai modèle (répare B12). L'appliquer, re-mesurer, **puis seulement** passer à
-un **nouveau panel inédit**. En parallèle : **prix Cultura actuels** (export Claire) pour les écarts.
+**Nouveau panel totalement inédit** (produits jamais utilisés pour développer les règles) = la
+**vraie mesure de généralisation** de la fiabilité des `Validé`. En parallèle : **prix Cultura
+actuels** (export Claire) pour enfin **calculer des écarts**. Amélioration générale identifiée à
+valider sur ce panel (pas sur les 15) : « boîtier nu » prime sur un bundle d'accessoires (cas B6).
 
 Principe retenu : **mieux vaut un `Validé` rare mais fiable** que des `Validé` nombreux mais faux.
 
@@ -152,6 +162,9 @@ Principe retenu : **mieux vaut un `Validé` rare mais fiable** que des `Validé`
 
 ## Historique des avancées
 
+- **28/08/2026** — **Matching 3ᵉ raffinement** (nettoyage titres + marque≠identifiant + type produit)
+  + rejeu final. Non-régression 5/5 ; **faux `Validé` 3→1**, **exactitude 40 %→67 %** ; B7/B14/B3/B12
+  traités, B6 documenté. 41 tests. Fin de l'optimisation sur ces 15 → prochain = panel inédit.
 - **28/08/2026** — **Matching 2ᵉ raffinement** (tokens faibles + référence corroborée +
   contradictions critiques) + rejeu 3 états. Non-régression 5/5 ; B3 régression corrigée ; 0 bon
   `Validé` perdu ; exactitude toujours 50 % (2 causes résiduelles : artefact de titre, référence=marque).
