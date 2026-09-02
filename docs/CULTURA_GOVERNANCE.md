@@ -1,7 +1,14 @@
 # Note gouvernance — lecture des offres Cultura par Bench
 
-Note préparée pour échange avec le Pôle Data / IT / Juridique **avant toute industrialisation**.
-Objectif : cadrer proprement la récupération des prix/offres Cultura pour le benchmark concurrentiel.
+> ⚠️ **Document INTERNE au projet.** Ne **pas** l'envoyer tel quel à Cédric / IT pour l'instant.
+> Marwan présente d'abord le sujet à **Claire**. Formulation pour les récaps : « Bench a identifié une
+> méthode pour récupérer automatiquement les offres Cultura actuelles ; elle fonctionne sur les premiers
+> tests ; avant un usage à plus grande échelle, valider avec Claire si on continue ainsi ou si elle
+> préfère passer par Cédric / IT pour obtenir/valider une **source interne officielle**. »
+> Aucun message à Cédric n'est préparé ni envoyé sans demande explicite de Marwan.
+
+Note technique interne — cadre à valider **avant toute industrialisation** : récupération propre des
+prix/offres Cultura pour le benchmark concurrentiel.
 
 ## 1. Quel endpoint public est utilisé
 - **API GraphQL du site Cultura** : `POST https://www.cultura.com/magento/graphql`.
