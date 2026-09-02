@@ -162,6 +162,10 @@ Principe retenu : **mieux vaut un `Validé` rare mais fiable** que des `Validé`
 
 ## Historique des avancées
 
+- **28/08/2026** — **Mini-POC Cultura** : site public **accessible** (headed, sans 403), **fiche produit
+  lisible** (prix, livraison), **offre 1P identifiable** (« Vendu et expédié par : Cultura »). Blocage :
+  atteindre une fiche précise (recherche JS non pilotable ; URL par EAN → 500) → besoin endpoint/mapping
+  ou export Claire. Détail : `data/outputs/poc_cultura_2026-08-28.md`.
 - **28/08/2026** — **Correctifs C13/C14** (accessoire/compatible ; gamme partagée → descripteur requis).
   **C13 régression corrigée** ✅ ; C4/C9 conservés ; contrôles 5/5. **C14 reste faux** (« Liquide de Base
   AC100 1 L » : cas kit vs composant seul) → piste « complétude du kit » à discuter. 50 tests.
