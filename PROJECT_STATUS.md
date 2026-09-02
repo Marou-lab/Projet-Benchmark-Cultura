@@ -16,12 +16,11 @@ récupère les prix, et génère un **Excel de benchmark** qui répond à la que
 
 ## Avancement global
 
-**~50 %.** Fondations + lecture/diagnostic du **vrai fichier Top 150** opérationnels. **Collecteur
-Cdiscount automatisé** (commande lançable) : il **reproduit tout seul les conclusions du POC sur les
-5 produits (5/5)** — trouve, rejette les faux positifs, valide ou refuse. ⚠ Validé **uniquement sur
-ces 5 références de contrôle** ; la **robustesse générale sur de nouveaux produits reste à démontrer**.
-Reste : la **montée en charge (20 → 50)**, la **stabilité du navigateur**, et les **prix Cultura
-actuels** (pour les écarts).
+**~55 %.** Collecteur Cdiscount automatisé opérationnel + matching affiné et **gelé**. **Première
+mesure indépendante** (panel de 15 produits inédits, représentatif) : **exactitude des `Validé`
+= 80 % (4/5), 1 seul faux `Validé`**, 0 blocage technique. Le principe V1 (précision > couverture)
+est tenu. Reste : quelques imperfections comprises (quantité/volume, construction de requête), et
+surtout les **prix Cultura actuels** (export Claire) pour enfin **calculer des écarts**.
 
 ## Ce qui fonctionne
 
@@ -147,10 +146,11 @@ Nettoyage des titres (collecte) + marque ≠ identifiant + cohérence du type de
 
 ## Prochaine étape
 
-**Nouveau panel totalement inédit** (produits jamais utilisés pour développer les règles) = la
-**vraie mesure de généralisation** de la fiabilité des `Validé`. En parallèle : **prix Cultura
-actuels** (export Claire) pour enfin **calculer des écarts**. Amélioration générale identifiée à
-valider sur ce panel (pas sur les 15) : « boîtier nu » prime sur un bundle d'accessoires (cas B6).
+À décider avec Marwan. Trois améliorations générales identifiées par le panel C (à traiter hors de
+ces 15) : (1) cohérence **quantité/volume** (ml/L/kg) + kit vs composant [répare C14] ; (2) **nettoyage
+de la requête** (suffixe régional « /12 », marque multi-mots) [répare C9/C10] ; (3) formats de
+**référence avec espace** (« L 450 ») [répare C4]. **En parallèle et prioritaire** : les **prix
+Cultura actuels** (export Claire) pour transformer Bench en **vrai benchmark chiffré** (écarts).
 
 Principe retenu : **mieux vaut un `Validé` rare mais fiable** que des `Validé` nombreux mais faux.
 
@@ -162,6 +162,10 @@ Principe retenu : **mieux vaut un `Validé` rare mais fiable** que des `Validé`
 
 ## Historique des avancées
 
+- **28/08/2026** — **Mesure indépendante (panel C, 15 inédits, règles gelées)** + contrôle manuel.
+  **Exactitude des `Validé` = 80 % (4/5), 1 faux `Validé`** (C14 : composant vs kit). 2 ratés
+  `Non trouvé` (C9/C10 : construction de requête). Décisions correctes/défendables 11/15. 0 blocage.
+- **28/08/2026** — **Correctif B6** (« boîtier nu » prime sur bundle) puis **gel des règles**. 42 tests.
 - **28/08/2026** — **Matching 3ᵉ raffinement** (nettoyage titres + marque≠identifiant + type produit)
   + rejeu final. Non-régression 5/5 ; **faux `Validé` 3→1**, **exactitude 40 %→67 %** ; B7/B14/B3/B12
   traités, B6 documenté. 41 tests. Fin de l'optimisation sur ces 15 → prochain = panel inédit.
