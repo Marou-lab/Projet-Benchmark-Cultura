@@ -40,6 +40,7 @@ class CollectorResult:
     seller: str = ""
     seller_type: str = "Indéterminé"  # 1P / 3P / Indéterminé
     delivery: str = "Inconnue"
+    shipping: float | None = None     # frais de port en € (None = Inconnue)
     total: float | None = None
     competitor_ean: str = "Non affiché"
 

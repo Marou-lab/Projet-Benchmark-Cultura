@@ -125,12 +125,34 @@ def search(page, query: str) -> tuple[list[Candidate], bool]:
     return cands, False
 
 
+# JSON-LD (schema.org Product) : offre buybox structurée = prix + port + état + EAN (gtin).
+_JS_LD = r"""
+() => {
+  const lds = [...document.querySelectorAll('script[type="application/ld+json"]')]
+    .map(s => { try { return JSON.parse(s.textContent); } catch (e) { return null; } })
+    .filter(Boolean);
+  const p = lds.find(x => {
+    const t = x['@type']; return (Array.isArray(t) ? t.join() : String(t || '')).toLowerCase().includes('product');
+  });
+  if (!p || !p.offers) return null;
+  const o = Array.isArray(p.offers) ? p.offers[0] : p.offers;
+  let ship = null;
+  if (o.shippingDetails && o.shippingDetails.shippingRate && o.shippingDetails.shippingRate.value != null)
+    ship = parseFloat(o.shippingDetails.shippingRate.value);
+  return { price: o.price != null ? parseFloat(o.price) : null, shipping: ship,
+           condition: o.itemCondition || null, gtin: p.gtin || p.gtin13 || null };
+}
+"""
+
+
 def fetch_offer(page, url: str) -> dict:
-    """Ouvre la fiche retenue et lit vendeur / type 1P-3P / livraison."""
+    """Ouvre la fiche retenue et lit vendeur/1P-3P + (via JSON-LD) prix/port/état/EAN."""
     page.goto(url, wait_until="domcontentloaded", timeout=30000)
     page.wait_for_timeout(1500)
     if _looks_blocked(page):
-        return {"seller": "", "seller_type": "Indéterminé", "delivery": "Inconnue", "blocked": True}
+        return {"seller": "", "seller_type": "Indéterminé", "delivery": "Inconnue",
+                "shipping": None, "price_ld": None, "condition": "Inconnue", "gtin": "",
+                "blocked": True}
     txt = page.evaluate("document.body ? document.body.innerText : ''")
     low = txt.lower()
 
@@ -144,8 +166,16 @@ def fetch_offer(page, url: str) -> dict:
     if seller and "cdiscount" in seller.lower():
         seller_type = "1P"
 
-    delivery = "Gratuite" if "livraison gratuite" in low else "Inconnue"
-    return {"seller": seller, "seller_type": seller_type, "delivery": delivery, "blocked": False}
+    ld = page.evaluate(_JS_LD) or {}
+    shipping = ld.get("shipping")
+    condition = "Neuf" if "new" in str(ld.get("condition") or "").lower() else "Inconnue"
+    if shipping is not None:
+        delivery = "Gratuite" if shipping == 0 else f"{shipping:.2f} €"
+    else:
+        delivery = "Gratuite" if "livraison gratuite" in low else "Inconnue"
+    return {"seller": seller, "seller_type": seller_type, "delivery": delivery,
+            "shipping": shipping, "price_ld": ld.get("price"), "condition": condition,
+            "gtin": ld.get("gtin") or "", "blocked": False}
 
 
 def collect_one(page, product: Product) -> CollectorResult:
@@ -190,8 +220,14 @@ def collect_one(page, product: Product) -> CollectorResult:
         res.seller = offer["seller"]
         res.seller_type = offer["seller_type"]
         res.delivery = offer["delivery"]
-        if res.price is not None and res.delivery == "Gratuite":
-            res.total = res.price
+        res.shipping = offer.get("shipping")
+        res.competitor_ean = offer.get("gtin") or "Non affiché"
+        # Prix buybox de la fiche (JSON-LD) = plus fiable pour le prix affiché de l'offre.
+        if offer.get("price_ld") is not None:
+            res.price = offer["price_ld"]
+        # Total livré = prix + port, uniquement si le port est connu (sinon Inconnue).
+        if res.price is not None and res.shipping is not None:
+            res.total = round(res.price + res.shipping, 2)
     return res
 
 

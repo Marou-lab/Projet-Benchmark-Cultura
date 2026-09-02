@@ -10,10 +10,11 @@ from openpyxl.styles import Font
 SYNTHESE_COLS = [
     "EAN", "Produit", "Métier", "VA TTC",
     "Statut Cdiscount", "Confiance",
-    "Cultura 1P (€)", "Cultura meilleure globale livrée (€)",
-    "Cdiscount meilleure (livrée) (€)", "Cdiscount vendeur", "Cdiscount 1P/3P",
-    "Écart 1P↔concurrent €", "Écart 1P↔concurrent %",
-    "Écart meilleures globales €", "Écart meilleures globales %",
+    "Cultura 1P produit (€)", "Cultura meilleur prix produit (€)", "Cultura meilleur total livré (€)",
+    "Cdiscount vendeur", "Cdiscount 1P/3P",
+    "Cdiscount prix produit (€)", "Cdiscount livraison", "Cdiscount total livré (€)",
+    "Écart prix produit €", "Écart prix produit %",
+    "Écart total livré €", "Écart total livré %",
     "Remarque / anomalie",
 ]
 

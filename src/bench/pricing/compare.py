@@ -20,7 +20,8 @@ def readings(offers: list) -> dict:
         "offre_1P": next((o for o in offers if getattr(o, "seller_type", "") == "1P"), None),
         "best3P_produit": _min_by(o3, "price"),
         "best3P_total": _min_by(o3, "total"),
-        "best_global_total": _min_by(offers, "total"),
+        "best_global_produit": _min_by(offers, "price"),   # meilleure offre en prix produit
+        "best_global_total": _min_by(offers, "total"),     # meilleure offre en total livré
         "nb_offres": len(offers),
     }
 
