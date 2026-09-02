@@ -162,6 +162,10 @@ Principe retenu : **mieux vaut un `Validé` rare mais fiable** que des `Validé`
 
 ## Historique des avancées
 
+- **28/08/2026** — **Correctifs A/B/C** (quantité/volume/poids ; requêtes /12 + repli ; réf. avec
+  espace) + tests (47). Vérif : **C4, C9 réparés** ✅ ; **C10 partiel** ; **C14 non résolu** (autre kit
+  AC100) ; **C13 régression** (ensemble d'accessoires validé). Non-régression contrôles 5/5. Prochain
+  correctif (accessoire générique + gamme/ligne) à discuter avant tout nouveau panel.
 - **28/08/2026** — **Mesure indépendante (panel C, 15 inédits, règles gelées)** + contrôle manuel.
   **Exactitude des `Validé` = 80 % (4/5), 1 faux `Validé`** (C14 : composant vs kit). 2 ratés
   `Non trouvé` (C9/C10 : construction de requête). Décisions correctes/défendables 11/15. 0 blocage.
