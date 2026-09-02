@@ -162,6 +162,10 @@ Principe retenu : **mieux vaut un `Validé` rare mais fiable** que des `Validé`
 
 ## Historique des avancées
 
+- **28/08/2026** — **POC détail des offres Cultura** : via `mpOffers(product_sku)` (GraphQL), on récupère
+  par offre 3P **vendeur + prix + port + prix total livré + état + quantité** ; l'offre **1P Cultura** = prix
+  buybox opérateur. Testé sur PS5 (1P 599,99 € + 5 offres 3P), LEGO, Brother — cohérent, 0 blocage. Note
+  gouvernance prête (`docs/CULTURA_GOVERNANCE.md`). Détail : `data/outputs/poc_cultura_offres_2026-08-28.md`.
 - **28/08/2026** — **Fix C14 (complétude du kit)** vérifié : C14 Validé ❌ → **À vérifier** ✅ (composant
   incomplet), **0 régression** (contrôles 5/5 ; C4/C9/C13/C3/C7/C11 conservés). **Matching re-figé.** 52 tests.
 - **28/08/2026** — **POC Cultura EAN→fiche RÉSOLU** : Cultura = Magento ; endpoint **GraphQL public**
