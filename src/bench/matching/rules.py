@@ -99,9 +99,14 @@ def _is_strong_alone(ref: str) -> bool:
 
 def extract_reference(name: str) -> str | None:
     for tok in re.findall(r"[A-Za-z0-9][A-Za-z0-9./-]*", name or ""):
-        tok = tok.strip("./-")
+        tok = re.sub(r"/\d+$", "", tok.strip("./-"))   # retire suffixe régional « /12 »
         if _is_strong_ref(tok):
             return tok
+    # Repli : référence « préfixe MAJUSCULE + espace + chiffres » (ex. « L 450 »), général.
+    # Majuscule + non précédé d'un alphanumérique → évite « 4K 55 » -> « K 55 ».
+    m = re.search(r"(?<![A-Za-z0-9])([A-Z]{1,3} \d{2,}[A-Za-z0-9-]*)", name or "")
+    if m and _is_strong_ref(m.group(1).replace(" ", "")):
+        return m.group(1)
     return None
 
 
@@ -128,6 +133,18 @@ def build_query(product: Product) -> str:
     return f"{brand} {base}".strip() if brand else base
 
 
+def search_queries(product: Product) -> list[str]:
+    """Requêtes à essayer dans l'ordre. Repli = la référence seule (quand elle est
+    assez discriminante) — utile si la marque est mal orthographiée/composée
+    (« Fuji Film » vs « Fujifilm ») et dégrade la recherche."""
+    primary = build_query(product)
+    queries = [primary]
+    ref = _discriminant_ref(product)
+    if ref and _is_strong_alone(ref) and _norm(ref) != _norm(primary):
+        queries.append(ref)
+    return queries
+
+
 def _is_used(title: str) -> bool:
     t = _norm(title)
     return any(k in t for k in ("reconditionne", "occasion", "seconde main", "d'occasion"))
@@ -145,11 +162,27 @@ def _price_plausible(price: float | None, expected: float | None) -> bool | None
 
 
 def _ref_in(hay: str, ref_norm: str) -> bool:
-    return re.search(rf"(?<![a-z0-9]){re.escape(ref_norm)}(?![a-z0-9])", hay) is not None
+    # Tolère l'espace dans une référence « L 450 » (côté produit ET côté candidat).
+    h = re.sub(r"([a-z]{1,3}) (\d{2,})", r"\1\2", hay)
+    r = ref_norm.replace(" ", "")
+    return re.search(rf"(?<![a-z0-9]){re.escape(r)}(?![a-z0-9])", h) is not None
 
 
 def _capacities(text: str) -> set[str]:
     return set(re.findall(r"\d+\s?(?:go|to|tb|gb)", _norm(text)))
+
+
+_VOL_ML = {"ml": 1, "cl": 10, "l": 1000, "litre": 1000, "litres": 1000}
+_WEIGHT_G = {"g": 1, "gr": 1, "kg": 1000}
+
+
+def _quantities(text: str, units: dict) -> set[int]:
+    """Valeurs normalisées (ml ou g) trouvées dans le texte."""
+    out: set[int] = set()
+    pattern = r"(\d+(?:[.,]\d+)?)\s?(" + "|".join(units) + r")\b"
+    for val, unit in re.findall(pattern, _norm(text)):
+        out.add(round(float(val.replace(",", ".")) * units[unit]))
+    return out
 
 
 def _explicit_colors(text: str) -> set[str]:
@@ -189,6 +222,12 @@ def critical_contradiction(product_name: str, candidate_title: str) -> str:
     pc, cc = _capacities(product_name), _capacities(candidate_title)
     if pc and cc and pc.isdisjoint(cc):
         return "capacité différente"
+    pv, cv = _quantities(product_name, _VOL_ML), _quantities(candidate_title, _VOL_ML)
+    if pv and cv and pv.isdisjoint(cv):
+        return "volume/contenance différent"
+    pw, cw = _quantities(product_name, _WEIGHT_G), _quantities(candidate_title, _WEIGHT_G)
+    if pw and cw and pw.isdisjoint(cw):
+        return "poids différent"
     pcol, ccol = _explicit_colors(product_name), _explicit_colors(candidate_title)
     if pcol and ccol and pcol.isdisjoint(ccol):
         return "couleur différente"

@@ -210,6 +210,41 @@ def test_type_de_produit_incompatible():
     assert rules.critical_contradiction("Vibox IV-590 PC Gamer", "Vibox IV-590 PC Gamer") == ""
 
 
+def test_suffixe_regional_retire_de_la_reference():
+    # C9 : « 75PUS8500/12 » -> référence « 75PUS8500 » (suffixe régional /12 retiré).
+    assert rules.extract_reference("Smart TV philips 75PUS8500/12 75 pouces 4k QLED") == "75PUS8500"
+
+
+def test_reference_avec_espace():
+    # C4 : « L 450 » (lettre + espace + chiffres) reconnue comme référence, sans règle Bernina.
+    assert rules.extract_reference("Surjeteuse BERNINA L 450") == "L 450"
+    p = _product("Surjeteuse BERNINA L 450", "Bernina", 699)
+    cands = [Candidate(title="Surjeteuse BERNINA L 450", url="/f-1-bernina.html", price=699.0)]
+    assert rules.evaluate(p, cands)["status"] == "Validé"
+
+
+def test_volume_different_bloque_valide():
+    # C14 : « Liquide base 500 ml » ≠ « Kit 1 l + 2,5 kg » -> contradiction volume.
+    prod = "Jesmonite AC100 Kit Démarrage Liquid 1 l et Base 2,5 kg"
+    cand = "Liquide de Base JESMONITE AC100 500 ml"
+    assert rules.critical_contradiction(prod, cand) == "volume/contenance différent"
+    p = _product(prod, "Jesmonite", 30)
+    cands = [Candidate(title=cand, url="/f-1-jes.html", price=21.55)]
+    assert rules.evaluate(p, cands)["status"] != "Validé"
+
+
+def test_poids_different_bloque_valide():
+    assert rules.critical_contradiction("Sac de plâtre 5 kg", "Sac de plâtre 25 kg") == "poids différent"
+
+
+def test_requete_repli_reference_seule():
+    # C10 : marque composée « Fuji Film » -> repli sur la référence seule « X-S20 ».
+    p = _product("FUJIFILM X-S20 NOIR + 15-45mm", "Fuji Film", 1409)
+    qs = rules.search_queries(p)
+    assert qs[0] == "Fuji Film X-S20"
+    assert "X-S20" in qs
+
+
 def test_boitier_nu_prime_sur_bundle():
     # B6 : « R7 Nu + Sac + Carte SD » (boîtier sans objectif, bundlé) ≠ kit avec objectif.
     p = _product("Canon EOS R7 + RF-S 18-150mm F3.5-6.3 IS STM", "Canon", 1700)

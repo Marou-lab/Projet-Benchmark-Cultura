@@ -150,24 +150,33 @@ def fetch_offer(page, url: str) -> dict:
 
 def collect_one(page, product: Product) -> CollectorResult:
     now = _dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    query = rules.build_query(product)
+    queries = rules.search_queries(product)
     res = CollectorResult(
         ean_source=product.ean.normalized if product.ean else "",
         product_cultura=product.name,
-        query=query,
+        query=queries[0],
         collected_at=now,
     )
 
-    candidates, blocked = search(page, query)
-    if blocked:
-        res.status = "Non vérifié"
-        res.confidence = "—"
-        res.match_evidence = "Collecte bloquée par Cdiscount (accès refusé). Non contourné."
-        return res
+    # Essaie les requêtes dans l'ordre ; s'arrête dès qu'une donne mieux que « Non trouvé ».
+    candidates: list = []
+    decision = {"status": "Non trouvé", "confidence": "—", "retained": None,
+                "evidence": "Aucun candidat pertinent."}
+    for q in queries:
+        cands, blocked = search(page, q)
+        if blocked:
+            res.status = "Non vérifié"
+            res.confidence = "—"
+            res.query = q
+            res.match_evidence = "Collecte bloquée par Cdiscount (accès refusé). Non contourné."
+            return res
+        candidates, decision = cands, rules.evaluate(product, cands)
+        res.query = q
+        if decision["status"] != "Non trouvé":
+            break
 
     res.candidates = candidates
     res.candidates_count = len(candidates)
-    decision = rules.evaluate(product, candidates)
     res.status = decision["status"]
     res.confidence = decision["confidence"]
     res.match_evidence = decision["evidence"]
