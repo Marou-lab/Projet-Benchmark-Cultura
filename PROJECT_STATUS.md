@@ -16,11 +16,13 @@ récupère les prix, et génère un **Excel de benchmark** qui répond à la que
 
 ## Avancement global
 
-**~55 %.** Collecteur Cdiscount automatisé opérationnel + matching affiné et **gelé**. **Première
-mesure indépendante** (panel de 15 produits inédits, représentatif) : **exactitude des `Validé`
-= 80 % (4/5), 1 seul faux `Validé`**, 0 blocage technique. Le principe V1 (précision > couverture)
-est tenu. Reste : quelques imperfections comprises (quantité/volume, construction de requête), et
-surtout les **prix Cultura actuels** (export Claire) pour enfin **calculer des écarts**.
+**~65 %.** **Chaîne complète V1 démontrée end-to-end** sur 5 produits : Top 150 → EAN → **offres
+Cultura** (API GraphQL publique : 1P + 3P détaillés) + **Cdiscount** (matching gelé) → **lectures
+multiples** (1P / meilleure 3P / meilleure globale livrée) → **écarts** → **Excel 3 onglets**
+(Synthèse / Détail offres / À vérifier). Matching Cdiscount **figé** (exactitude `Validé` 80 % sur
+panel inédit). Reste : enrichir le détail des offres **Cdiscount** (1P/3P énumérés), recouper avec
+l'**export de Claire**, valider la **gouvernance** Cultura, puis **choisir l'offre de référence**
+(décision métier) et **passer à l'échelle** (20 → 150).
 
 ## Ce qui fonctionne
 
@@ -162,6 +164,10 @@ Principe retenu : **mieux vaut un `Validé` rare mais fiable** que des `Validé`
 
 ## Historique des avancées
 
+- **28/08/2026** — **Mini-test END-TO-END (5 produits)** : Cultura (GraphQL) + Cdiscount (matching) →
+  lectures multiples → écarts → **Excel 3 onglets**. Workflow validé. Insights : Brother écart 0 %
+  (même vendeur Sperenza), Vibox Cultura −3,5 %, PS5 flaggé À vérifier, Silhouette Non trouvé.
+  Modules : `collectors/cultura`, `pricing/compare`, `reporting/benchmark_excel`.
 - **28/08/2026** — **POC détail des offres Cultura** : via `mpOffers(product_sku)` (GraphQL), on récupère
   par offre 3P **vendeur + prix + port + prix total livré + état + quantité** ; l'offre **1P Cultura** = prix
   buybox opérateur. Testé sur PS5 (1P 599,99 € + 5 offres 3P), LEGO, Brother — cohérent, 0 blocage. Note
