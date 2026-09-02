@@ -164,6 +164,10 @@ Principe retenu : **mieux vaut un `Validé` rare mais fiable** que des `Validé`
 
 ## Historique des avancées
 
+- **28/08/2026** — **Cdiscount enrichi (JSON-LD)** : offre buybox = prix + **port** + total livré + état +
+  **EAN**. Liste complète 1P/3P **non raisonnablement accessible** (bouton JS) → limite documentée, on
+  garde le buybox. **Comparaison : 2 écarts SÉPARÉS** (prix produit / total livré ; jamais mélangés ;
+  total livré = Inconnu si port manquant). Excel Synthèse mis à jour. Détail : `data/outputs/poc_cdiscount_offres_2026-08-28.md`.
 - **28/08/2026** — **Mini-test END-TO-END (5 produits)** : Cultura (GraphQL) + Cdiscount (matching) →
   lectures multiples → écarts → **Excel 3 onglets**. Workflow validé. Insights : Brother écart 0 %
   (même vendeur Sperenza), Vibox Cultura −3,5 %, PS5 flaggé À vérifier, Silhouette Non trouvé.
