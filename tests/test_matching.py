@@ -210,6 +210,24 @@ def test_type_de_produit_incompatible():
     assert rules.critical_contradiction("Vibox IV-590 PC Gamer", "Vibox IV-590 PC Gamer") == ""
 
 
+def test_completude_kit_composant_incomplet():
+    # C14 : « Kit Démarrage » = 1 L + 2,5 kg ; le candidat n'a que le liquide 1 L -> incomplet.
+    prod = "Jesmonite AC100 Kit Démarrage Liquid 1 l et Base 2,5 kg"
+    cand = "Liquide de Base - JESMONITE - AC100 - 1 L - Multicolore"
+    assert rules.critical_contradiction(prod, cand) == "composant incomplet vs produit multi-éléments"
+    p = _product(prod, "Jesmonite", 30)
+    assert rules.evaluate(p, [Candidate(title=cand, url="/f-1-liq.html", price=37.8)])["status"] != "Validé"
+    # Le kit complet (les deux composants) reste Validé.
+    complet = "JESMONITE AC100 Kit Démarrage - Liquid 1 l et Base 2,5 kg"
+    assert rules.evaluate(p, [Candidate(title=complet, url="/f-1-kit.html", price=30.0)])["status"] == "Validé"
+
+
+def test_completude_ne_surbloque_pas_config_pc():
+    # Une config PC (Go/To) n'est PAS un « composant » -> pas de faux « incomplet ».
+    assert rules.critical_contradiction(
+        "Vibox IX-554 Ryzen 7 16 Go RAM 1 To SSD", "Vibox IX-554 Ryzen 7 16 Go 1 To") == ""
+
+
 def test_accessoire_compatible_non_valide():
     # C13 : un « ensemble d'accessoires compatible pour ... FX92 » n'est pas la calculatrice.
     p = _product("Calculatrice scientifique Casio Collège FX92", "Casio", 37)

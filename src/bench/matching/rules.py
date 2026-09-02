@@ -185,6 +185,16 @@ def _quantities(text: str, units: dict) -> set[int]:
     return out
 
 
+def _components(text: str) -> set:
+    """Composants PHYSIQUES décrits (volumes + poids), typés pour les distinguer.
+
+    On se limite au volume/poids (matières/consommables) : les capacités Go/To d'un
+    PC ne sont PAS des composants ici (évite de sur-bloquer une config tronquée)."""
+    comps = {("vol", v) for v in _quantities(text, _VOL_ML)}
+    comps |= {("poids", w) for w in _quantities(text, _WEIGHT_G)}
+    return comps
+
+
 def _explicit_colors(text: str) -> set[str]:
     words = set(_norm(text).replace("-", " ").split())
     return {c for c in _COLORS if c in words}
@@ -237,6 +247,11 @@ def critical_contradiction(product_name: str, candidate_title: str) -> str:
     pw, cw = _quantities(product_name, _WEIGHT_G), _quantities(candidate_title, _WEIGHT_G)
     if pw and cw and pw.isdisjoint(cw):
         return "poids différent"
+    # Complétude : le produit décrit plusieurs composants (ex. 1 L + 2,5 kg), le candidat
+    # n'en décrit qu'une partie (ex. 1 L seul) -> composant incomplet, pas le produit entier.
+    pcomp, ccomp = _components(product_name), _components(candidate_title)
+    if len(pcomp) >= 2 and ccomp < pcomp:
+        return "composant incomplet vs produit multi-éléments"
     pcol, ccol = _explicit_colors(product_name), _explicit_colors(candidate_title)
     if pcol and ccol and pcol.isdisjoint(ccol):
         return "couleur différente"
