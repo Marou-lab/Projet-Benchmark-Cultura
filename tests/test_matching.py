@@ -210,6 +210,43 @@ def test_type_de_produit_incompatible():
     assert rules.critical_contradiction("Vibox IV-590 PC Gamer", "Vibox IV-590 PC Gamer") == ""
 
 
+def test_accessoire_compatible_non_valide():
+    # C13 : un « ensemble d'accessoires compatible pour ... FX92 » n'est pas la calculatrice.
+    p = _product("Calculatrice scientifique Casio Collège FX92", "Casio", 37)
+    acc = Candidate(
+        title="CALCUSO Accessoires Ensemble Premium compatible pour Calculatrice Casio FX92",
+        url="/f-1-acc.html", price=18.99)
+    calc = Candidate(title="Casio FX92 Collège Calculatrice scientifique",
+                     url="/f-1-calc.html", price=37.0)
+    d = rules.evaluate(p, [acc, calc])
+    assert d["status"] == "Validé"
+    assert "CALCUSO" not in d["retained"].title  # l'accessoire n'est pas retenu
+
+
+def test_gamme_partagee_exige_descripteur():
+    # C14 : « AC100 » est une gamme partagée -> descripteur clé requis (« Démarrage »).
+    p = _product("Jesmonite AC100 Kit Démarrage Liquid 1 l et Base 2,5 kg", "Jesmonite", 30)
+    autres = [
+        Candidate(title="JESMONITE AC100 KIT - BOL DECORATIF", url="/f-1-bol.html", price=29.48),
+        Candidate(title="JESMONITE AC100 KIT - BOUGEOIRS", url="/f-1-bou.html", price=58.0),
+    ]
+    assert rules.evaluate(p, autres)["status"] != "Validé"
+    bon = [
+        Candidate(title="JESMONITE AC100 Kit Démarrage Liquid 1 l Base 2,5 kg",
+                  url="/f-1-dem.html", price=30.0),
+        Candidate(title="JESMONITE AC100 KIT - BOL DECORATIF", url="/f-1-bol.html", price=29.48),
+    ]
+    assert rules.evaluate(p, bon)["status"] == "Validé"
+
+
+def test_reference_unique_reste_valide_sans_descripteur():
+    # Une référence unique (ZU707T) reste Validé même si les descripteurs diffèrent (synonymes).
+    p = _product("Optoma ZU707T Vidéoprojecteur Full HD", "Optoma", 2700)
+    cands = [Candidate(title="Optoma CinemaX ZU707T - projecteur laser",
+                       url="/f-1-opt.html", price=2614.64)]
+    assert rules.evaluate(p, cands)["status"] == "Validé"
+
+
 def test_suffixe_regional_retire_de_la_reference():
     # C9 : « 75PUS8500/12 » -> référence « 75PUS8500 » (suffixe régional /12 retiré).
     assert rules.extract_reference("Smart TV philips 75PUS8500/12 75 pouces 4k QLED") == "75PUS8500"

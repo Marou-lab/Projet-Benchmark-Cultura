@@ -207,7 +207,16 @@ def _is_bare(text: str) -> bool:
 
 
 def _is_accessory(title: str) -> bool:
+    """Accessoire / consommable / produit « compatible avec » = pas le produit principal."""
     t = _norm(title).strip()
+    # « compatible avec/pour le modèle X » = signal fort que ce n'est PAS le produit.
+    if "compatible avec" in t or "compatible pour" in t or "compatible :" in t:
+        return True
+    # Ensemble/lot/pack/kit/set d'accessoires, ou « accessoire(s) » en tête de titre.
+    if re.search(r"\b(ensemble|lot|pack|kit|set)\s+(?:d'|de\s+)?accessoires?\b", t):
+        return True
+    if "accessoire" in " ".join(t.split()[:4]):
+        return True
     return any(t.startswith(w) or f"{w} pour " in t or f"{w} de remplacement" in t
                for w in _ACCESSORY)
 
@@ -247,6 +256,11 @@ def critical_contradiction(product_name: str, candidate_title: str) -> str:
     return ""
 
 
+# Mots trop génériques pour prouver, seuls, qu'il s'agit du même produit d'une gamme.
+_GENERIC_DESC = {"kit", "set", "ensemble", "pack", "lot", "premium", "collector",
+                 "edition", "neuf"}
+
+
 def evaluate(product: Product, candidates: list[Candidate]) -> dict:
     ref = _discriminant_ref(product)
     ref_norm = _norm(ref) if ref else None
@@ -255,6 +269,8 @@ def evaluate(product: Product, candidates: list[Candidate]) -> dict:
     expected = product.prix_moyen_vente_periode_ttc
     brand_words = set(_significant_words(product.brand))
     relevance_words = set(_significant_words(product.name)) - brand_words
+    # Descripteurs métier « spécifiques » (hors marque et hors mots trop génériques).
+    descriptor_words = relevance_words - _GENERIC_DESC
 
     eligible: list[Candidate] = []
     for c in candidates:
@@ -282,6 +298,11 @@ def evaluate(product: Product, candidates: list[Candidate]) -> dict:
         return {"status": "Non trouvé", "confidence": "—", "retained": None,
                 "evidence": f"Aucun candidat pertinent (référence recherchée : {ref or 'aucune'})."}
 
+    # Référence partagée par ≥2 candidats = gamme/ligne (ex. « AC100 »), pas un modèle
+    # unique : elle ne suffit plus seule, il faut un descripteur métier concordant.
+    ref_shared = ref_norm is not None and sum(
+        1 for c in eligible if _ref_in(_norm(c.title + " " + c.url), ref_norm)) >= 2
+
     # VALIDÉ : identifiant discriminant confirmé + marque cohérente + AUCUNE contradiction critique.
     strong: list[Candidate] = []
     for c in eligible:
@@ -290,8 +311,11 @@ def evaluate(product: Product, candidates: list[Candidate]) -> dict:
             continue
         if has_brand and brand_norm not in hay:
             continue
-        short_ref = not _is_strong_alone(ref)
-        if short_ref and len(relevance_words & set(_significant_words(c.title))) < 1:
+        # Référence courte (R7) OU partagée (gamme) → exiger un descripteur métier concordant.
+        need_desc = (not _is_strong_alone(ref)) or ref_shared
+        cand_desc = set(_significant_words(c.title)) - _GENERIC_DESC
+        if need_desc and descriptor_words and not (descriptor_words & cand_desc):
+            c.rejected_reason = "gamme/référence sans descripteur métier concordant"
             continue
         conflict = critical_contradiction(product.name, c.title)
         if conflict:
