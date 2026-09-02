@@ -162,6 +162,9 @@ Principe retenu : **mieux vaut un `Validé` rare mais fiable** que des `Validé`
 
 ## Historique des avancées
 
+- **28/08/2026** — **Correctifs C13/C14** (accessoire/compatible ; gamme partagée → descripteur requis).
+  **C13 régression corrigée** ✅ ; C4/C9 conservés ; contrôles 5/5. **C14 reste faux** (« Liquide de Base
+  AC100 1 L » : cas kit vs composant seul) → piste « complétude du kit » à discuter. 50 tests.
 - **28/08/2026** — **Correctifs A/B/C** (quantité/volume/poids ; requêtes /12 + repli ; réf. avec
   espace) + tests (47). Vérif : **C4, C9 réparés** ✅ ; **C10 partiel** ; **C14 non résolu** (autre kit
   AC100) ; **C13 régression** (ensemble d'accessoires validé). Non-régression contrôles 5/5. Prochain
