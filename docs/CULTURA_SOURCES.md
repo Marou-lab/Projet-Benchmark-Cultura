@@ -20,7 +20,8 @@ les offres d'un produit**, jamais réduire à « un produit = un prix ».
 | **Nos fichiers** (Top 150) | ✅ déjà là | VA **historique** (juin-août) | **Aucun prix actuel**, aucune offre → inutilisable pour l'actuel |
 | **Export prix de Claire** | ⏳ demandé, en attente | prix/offres actuels (selon contenu) | dépend de ce que Claire fournit (1P seul ? toutes les offres ?) |
 | **Site public Cultura** | ✅ **testé accessible** | prix + **multiplicité d'offres** (« + N neuf ») ; fiches produit avec offres | anti-bot possible en profondeur ; conditions d'utilisation ; JS |
-| **Collecte navigateur** (comme Cdiscount) | ✅ techniquement réutilisable | idem site public, structuré | à valider sur fiches produit ; gérer **toutes** les offres 1P/3P |
+| **API GraphQL Magento** (`/magento/graphql`) | ✅ **testé, EAN→fiche résolu** | ean, url_key (→ URL), prix actuel, dispo, liste d'offres (codes vendeurs) — **structuré** | API publique non documentée pour nous → peut évoluer ; **gouvernance/CGU à confirmer** ; détail par offre (prix/vendeur/1P-3P) à enrichir |
+| **Collecte navigateur** (comme Cdiscount) | ✅ techniquement réutilisable | fiche HTML : « Vendu et expédié par : Cultura » = 1P | à valider ; gérer **toutes** les offres 1P/3P |
 | **Sources internes** (Mirakl API, exports Mirakl, Magento, Data Lake, API interne) | ❌ pas d'accès | offres **structurées et fiables** (la meilleure source) | nécessite **accès + autorisation** internes (non disponibles) |
 
 ## Constat clé (test réalisé le 28/08)

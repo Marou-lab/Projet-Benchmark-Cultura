@@ -162,10 +162,12 @@ Principe retenu : **mieux vaut un `Validé` rare mais fiable** que des `Validé`
 
 ## Historique des avancées
 
-- **28/08/2026** — **Mini-POC Cultura** : site public **accessible** (headed, sans 403), **fiche produit
-  lisible** (prix, livraison), **offre 1P identifiable** (« Vendu et expédié par : Cultura »). Blocage :
-  atteindre une fiche précise (recherche JS non pilotable ; URL par EAN → 500) → besoin endpoint/mapping
-  ou export Claire. Détail : `data/outputs/poc_cultura_2026-08-28.md`.
+- **28/08/2026** — **Fix C14 (complétude du kit)** vérifié : C14 Validé ❌ → **À vérifier** ✅ (composant
+  incomplet), **0 régression** (contrôles 5/5 ; C4/C9/C13/C3/C7/C11 conservés). **Matching re-figé.** 52 tests.
+- **28/08/2026** — **POC Cultura EAN→fiche RÉSOLU** : Cultura = Magento ; endpoint **GraphQL public**
+  (`/magento/graphql`) → `products(search:"<EAN>")` renvoie ean/url_key/prix/dispo/offres. **5/5 EAN
+  résolus** (URL + prix actuel). Détail par offre (vendeur/1P-3P) = increment. Gouvernance à confirmer.
+  Détail : `data/outputs/poc_cultura_2026-08-28.md`.
 - **28/08/2026** — **Correctifs C13/C14** (accessoire/compatible ; gamme partagée → descripteur requis).
   **C13 régression corrigée** ✅ ; C4/C9 conservés ; contrôles 5/5. **C14 reste faux** (« Liquide de Base
   AC100 1 L » : cas kit vs composant seul) → piste « complétude du kit » à discuter. 50 tests.
